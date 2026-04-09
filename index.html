@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Peak Flow Clinic — รพ.แปลงยาว</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Kanit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --white: #ffffff;
+  --navy: #0d2347;
+  --navy2: #1a3a6e;
+  --teal: #00897b;
+  --teal2: #00bfa5;
+  --teal-light: #e0f2f1;
+  --green: #2e7d32;
+  --green-bg: #e8f5e9;
+  --green-border: #a5d6a7;
+  --yellow: #bf360c;
+  --yellow-bg: #fff3e0;
+  --yellow-border: #ffcc80;
+  --red: #b71c1c;
+  --red-bg: #ffebee;
+  --red-border: #ef9a9a;
+  --text: #1a202c;
+  --sub: #5a6a7e;
+  --border: #dde3ec;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:15px; }
+
+/* TOP BAR */
+.topbar {
+  background: linear-gradient(135deg,#0d2347 0%,#1a3a6e 100%);
+  padding:14px 16px 12px; display:flex; align-items:center; gap:10px;
+  position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(0,0,0,0.25);
+}
+.topbar-icon { font-size:28px; }
+.topbar-title { flex:1; }
+.topbar-title h1 { font-family:'Kanit',sans-serif; font-size:17px; font-weight:700; color:#fff; line-height:1.2; }
+.topbar-title p { font-size:11px; color:rgba(255,255,255,0.6); margin-top:1px; }
+.topbar-badge {
+  background:rgba(0,191,165,0.25); border:1px solid rgba(0,191,165,0.5);
+  color:#80cbc4; font-size:10px; font-weight:700;
+  padding:3px 8px; border-radius:20px; letter-spacing:0.5px; white-space:nowrap;
+}
+
+/* TABS */
+.tabs {
+  display:flex; background:var(--white);
+  border-bottom:2px solid var(--border);
+  position:sticky; top:64px; z-index:99;
+}
+.tab {
+  flex:1; padding:12px 8px; text-align:center;
+  font-size:13px; font-weight:600; color:var(--sub);
+  cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;
+}
+.tab.active { color:var(--teal); border-bottom-color:var(--teal); }
+.tab-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--teal); color:#fff; font-size:10px; font-weight:700;
+  width:18px; height:18px; border-radius:50%; margin-left:4px; vertical-align:middle;
+}
+
+/* PANELS */
+.panel { display:none; padding:16px; padding-bottom:80px; }
+.panel.active { display:block; }
+
+/* CALC HEADER */
+.calc-header {
+  background:linear-gradient(135deg,var(--teal) 0%,#00695c 100%);
+  border-radius:14px; padding:16px 18px 14px; margin-bottom:16px; color:#fff;
+}
+.calc-header h2 { font-family:'Kanit',sans-serif; font-size:16px; font-weight:700; margin-bottom:2px; }
+.calc-header p { font-size:11.5px; color:rgba(255,255,255,0.8); line-height:1.5; }
+
+/* FORMULA PILLS */
+.formula-pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.fpill {
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);
+  border-radius:20px; padding:4px 10px; font-size:10.5px; color:rgba(255,255,255,0.9);
+  font-weight:600;
+}
+
+/* FORM CARD */
+.form-card {
+  background:var(--white); border-radius:14px;
+  padding:18px; margin-bottom:14px; box-shadow:var(--shadow);
+}
+.section-label {
+  font-size:11.5px; font-weight:700; color:var(--teal);
+  letter-spacing:0.8px; text-transform:uppercase; margin-bottom:12px;
+}
+
+/* GENDER */
+.gender-row { display:flex; gap:10px; margin-bottom:14px; }
+.gender-opt {
+  flex:1; padding:12px 8px; border-radius:10px;
+  border:2px solid var(--border); background:var(--bg);
+  text-align:center; cursor:pointer; transition:all 0.2s;
+  font-size:14px; font-weight:600; color:var(--sub); user-select:none;
+}
+.gender-opt.sel-m { border-color:#1976d2; background:#e3f2fd; color:#1565c0; }
+.gender-opt.sel-f { border-color:#e91e63; background:#fce4ec; color:#c2185b; }
+
+/* INPUT */
+.input-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.input-row.single { grid-template-columns:1fr; }
+.field { display:flex; flex-direction:column; gap:5px; }
+.field label { font-size:12px; font-weight:600; color:var(--sub); }
+.field label .req { color:#e53935; margin-left:2px; }
+.input-wrap { position:relative; }
+.input-wrap input {
+  width:100%; padding:11px 46px 11px 12px;
+  border:1.5px solid var(--border); border-radius:10px;
+  font-family:'Sarabun',sans-serif; font-size:17px;
+  font-weight:700; color:var(--text); background:var(--white);
+  -webkit-appearance:none; transition:border-color 0.2s;
+}
+.input-wrap input:focus { outline:none; border-color:var(--teal); }
+.input-wrap input::placeholder { font-size:13px; font-weight:400; color:#b0bec5; }
+.input-unit {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  font-size:12px; font-weight:600; color:var(--sub); pointer-events:none;
+}
+
+/* Formula hint */
+.formula-hint {
+  background:#f5f7fa; border-radius:8px; padding:10px 12px;
+  border:1px solid var(--border); margin-bottom:12px;
+  font-size:11.5px; color:var(--sub); line-height:1.7;
+}
+.formula-hint strong { color:var(--navy); }
+
+/* BUTTONS */
+.btn-row { display:flex; gap:10px; margin-top:4px; }
+.btn-calc {
+  flex:1; padding:14px;
+  background:linear-gradient(135deg,var(--teal2) 0%,var(--teal) 100%);
+  border:none; border-radius:12px; color:#fff;
+  font-family:'Kanit',sans-serif; font-size:16px; font-weight:700;
+  cursor:pointer; box-shadow:0 4px 16px rgba(0,137,123,0.3);
+  transition:all 0.15s; -webkit-appearance:none;
+}
+.btn-calc:active { transform:scale(0.98); }
+.btn-clear {
+  padding:14px 16px; background:var(--bg);
+  border:1.5px solid var(--border); border-radius:12px; color:var(--sub);
+  font-family:'Sarabun',sans-serif; font-size:14px; font-weight:600;
+  cursor:pointer; -webkit-appearance:none; transition:all 0.15s; white-space:nowrap;
+}
+.btn-clear:active { background:#e0e0e0; }
+
+/* RESULT */
+.result-box {
+  background:var(--white); border-radius:14px;
+  padding:18px; margin-bottom:14px; box-shadow:var(--shadow); display:none;
+}
+.result-title {
+  font-size:11.5px; font-weight:700; color:var(--sub);
+  text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px;
+  display:flex; align-items:center; gap:6px;
+}
+.result-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* MDCalc-style result rows */
+.result-row {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  padding:11px 0; border-bottom:1px solid var(--border); gap:8px;
+}
+.result-row:last-child { border-bottom:none; }
+.result-row-label { font-size:13px; color:var(--sub); line-height:1.5; flex:1; }
+.result-row-label .sublabel { font-size:11px; color:#90a4ae; display:block; margin-top:2px; }
+.result-row-val {
+  font-family:'Kanit',sans-serif; font-size:26px; font-weight:800;
+  white-space:nowrap; color:var(--navy); line-height:1;
+}
+.result-row-unit { font-size:12px; font-weight:500; color:var(--sub); margin-top:3px; text-align:right; }
+
+/* % result big */
+.pct-big {
+  font-family:'Kanit',sans-serif; font-size:26px; font-weight:800;
+  line-height:1; white-space:nowrap;
+}
+.pct-big.green { color:var(--green); }
+.pct-big.yellow { color:var(--yellow); }
+.pct-big.red { color:var(--red); }
+
+/* Meter bar */
+.pct-meter { margin:12px 0 6px; }
+.pct-meter-bar-wrap {
+  height:10px; background:#e0e0e0; border-radius:6px; overflow:hidden; position:relative;
+}
+.pct-marker-50, .pct-marker-80 {
+  position:absolute; top:0; width:2px; height:100%; background:rgba(0,0,0,0.15);
+}
+.pct-marker-50 { left:41.7%; }
+.pct-marker-80 { left:66.7%; }
+.pct-meter-bar {
+  height:100%; border-radius:6px; transition:width 0.6s cubic-bezier(.4,0,.2,1);
+}
+.pct-meter-bar.green { background:linear-gradient(90deg,#43a047,#66bb6a); }
+.pct-meter-bar.yellow { background:linear-gradient(90deg,#ef6c00,#ffa726); }
+.pct-meter-bar.red { background:linear-gradient(90deg,#c62828,#ef5350); }
+.pct-axis {
+  display:flex; justify-content:space-between;
+  font-size:10px; color:#9e9e9e; margin-top:3px;
+}
+
+/* Zone card */
+.zone-big {
+  border-radius:12px; padding:14px 16px; margin-top:12px; border:2px solid;
+  display:flex; align-items:center; gap:12px;
+}
+.zone-big.green { background:var(--green-bg); border-color:var(--green-border); }
+.zone-big.yellow { background:var(--yellow-bg); border-color:var(--yellow-border); }
+.zone-big.red { background:var(--red-bg); border-color:var(--red-border); }
+.zone-big-icon { font-size:28px; flex-shrink:0; }
+.zone-big-name {
+  font-family:'Kanit',sans-serif; font-size:15px; font-weight:700; margin-bottom:3px;
+}
+.zone-big.green .zone-big-name { color:var(--green); }
+.zone-big.yellow .zone-big-name { color:var(--yellow); }
+.zone-big.red .zone-big-name { color:var(--red); }
+.zone-big-action { font-size:12px; color:var(--sub); line-height:1.5; }
+
+/* Zone reference (no measured) */
+.zone-ref-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.zone-chip {
+  padding:5px 12px; border-radius:20px; font-size:12px; font-weight:700;
+  display:inline-flex; align-items:center; gap:4px;
+}
+.zone-chip.green { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); }
+.zone-chip.yellow { background:var(--yellow-bg); color:var(--yellow); border:1px solid var(--yellow-border); }
+.zone-chip.red { background:var(--red-bg); color:var(--red); border:1px solid var(--red-border); }
+
+/* Save row */
+.save-row { display:flex; gap:8px; margin-top:14px; }
+.btn-save {
+  flex:1; padding:12px; background:var(--navy); border:none; border-radius:10px;
+  color:#fff; font-family:'Sarabun',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; -webkit-appearance:none; transition:all 0.15s;
+}
+.btn-save:active { opacity:0.85; }
+.btn-next {
+  flex:1; padding:12px; background:var(--teal-light);
+  border:1.5px solid var(--teal); border-radius:10px; color:var(--teal);
+  font-family:'Sarabun',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; -webkit-appearance:none; transition:all 0.15s;
+}
+.btn-next:active { background:#b2dfdb; }
+
+/* LIST */
+.list-toolbar { display:flex; gap:8px; margin-bottom:14px; align-items:center; }
+.list-count { flex:1; font-size:13px; color:var(--sub); font-weight:600; }
+.btn-export {
+  padding:8px 14px; background:var(--navy); border:none; border-radius:8px;
+  color:#fff; font-family:'Sarabun',sans-serif; font-size:12px; font-weight:700; cursor:pointer;
+}
+.btn-clear-all {
+  padding:8px 14px; background:var(--red-bg); border:1.5px solid var(--red-border);
+  border-radius:8px; color:var(--red); font-family:'Sarabun',sans-serif;
+  font-size:12px; font-weight:700; cursor:pointer;
+}
+.empty-state { text-align:center; padding:48px 24px; color:var(--sub); }
+.empty-state .empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-state p { font-size:14px; }
+
+.patient-item {
+  background:var(--white); border-radius:12px; padding:14px 16px;
+  margin-bottom:10px; box-shadow:var(--shadow); border-left:4px solid transparent;
+  display:flex; align-items:center; gap:12px;
+}
+.patient-item.green { border-left-color:#66bb6a; }
+.patient-item.yellow { border-left-color:#ffa726; }
+.patient-item.red { border-left-color:#ef5350; }
+.patient-item.no-measured { border-left-color:#90a4ae; }
+.pt-num {
+  width:28px; height:28px; background:var(--bg); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--sub); flex-shrink:0;
+}
+.pt-info { flex:1; min-width:0; }
+.pt-name { font-size:14px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.pt-detail { font-size:12px; color:var(--sub); }
+.pt-values { text-align:right; flex-shrink:0; }
+.pt-predicted { font-family:'Kanit',sans-serif; font-size:18px; font-weight:800; color:var(--navy); line-height:1; }
+.pt-pct { font-size:12px; font-weight:700; margin-top:2px; }
+.pt-pct.green { color:var(--green); }
+.pt-pct.yellow { color:var(--yellow); }
+.pt-pct.red { color:var(--red); }
+.pt-pct.none { color:var(--sub); }
+.pt-delete {
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  background:var(--red-bg); border-radius:6px; color:var(--red);
+  font-size:14px; cursor:pointer; flex-shrink:0;
+}
+
+/* ABOUT */
+.about-card {
+  background:var(--white); border-radius:14px;
+  padding:18px; margin-bottom:14px; box-shadow:var(--shadow);
+}
+.about-card h3 { font-family:'Kanit',sans-serif; font-size:15px; font-weight:700; color:var(--navy); margin-bottom:12px; }
+.formula-block {
+  background:#f5f7fa; border-radius:8px; padding:12px;
+  font-family:'Courier New',monospace; font-size:11.5px; color:#37474f;
+  line-height:1.9; border:1px solid var(--border); overflow-x:auto;
+}
+.about-card p { font-size:13px; color:var(--sub); line-height:1.7; margin-bottom:8px; }
+.about-card p:last-child { margin-bottom:0; }
+.zone-about-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.zone-about-row:last-child { border-bottom:none; }
+.zdot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.zdot.green { background:#66bb6a; box-shadow:0 0 6px #66bb6a; }
+.zdot.yellow { background:#ffa726; box-shadow:0 0 6px #ffa726; }
+.zdot.red { background:#ef5350; box-shadow:0 0 6px #ef5350; }
+.zinfo strong { font-size:13px; font-weight:700; display:block; }
+.zinfo span { font-size:12px; color:var(--sub); }
+.zinfo.green strong { color:var(--green); }
+.zinfo.yellow strong { color:var(--yellow); }
+.zinfo.red strong { color:var(--red); }
+
+/* TABLE */
+.ref-table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+.ref-table th { background:var(--navy); color:#fff; padding:8px 10px; font-weight:700; text-align:center; }
+.ref-table td { padding:8px 10px; border-bottom:1px solid var(--border); text-align:center; color:var(--sub); }
+.ref-table tr:last-child td { border-bottom:none; }
+.ref-table td:first-child { font-weight:600; color:var(--text); text-align:left; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:#323232; color:#fff; padding:12px 20px; border-radius:24px;
+  font-size:13px; font-weight:600; z-index:9999;
+  transition:transform 0.3s ease; white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <span class="topbar-icon">🫁</span>
+  <div class="topbar-title">
+    <h1>Peak Flow คลินิก</h1>
+    <p>รพ.แปลงยาว · คลินิกโรคหืด/COPD</p>
+  </div>
+  <span class="topbar-badge">MDCalc Formula</span>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('calc')" id="tab-calc">🧮 คำนวณ</div>
+  <div class="tab" onclick="showTab('list')" id="tab-list">
+    📋 บันทึก <span class="tab-badge" id="list-count-badge">0</span>
+  </div>
+  <div class="tab" onclick="showTab('about')" id="tab-about">ℹ️ สูตร</div>
+</div>
+
+<!-- ===== CALC ===== -->
+<div class="panel active" id="panel-calc">
+
+  <div class="calc-header">
+    <h2>คำนวณค่าพลังปอด (Estimated Peak Flow)</h2>
+    <p>สูตรเดียวกับ MDCalc — Hankinson 1999 (NHANES III) และ Knudson 1983</p>
+    <div class="formula-pills">
+      <span class="fpill">อายุ 5–7 ปี: [(H−100)×5]+100</span>
+      <span class="fpill">อายุ 8–17 ปี (Other): [(H−100)×5]+100</span>
+      <span class="fpill">อายุ ≥18 ปี (Other): Knudson×Race</span>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="section-label">ข้อมูลผู้ป่วย</div>
+
+    <div class="input-row single" style="margin-bottom:12px;">
+      <div class="field">
+        <label>HN / ชื่อ-สกุล <span style="font-size:11px;color:#90a4ae">(ไม่บังคับ)</span></label>
+        <div class="input-wrap">
+          <input type="text" id="hn" placeholder="เช่น HN12345 หรือ นาย สมชาย" style="font-size:15px;font-weight:500;padding-right:12px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">เพศ</div>
+    <div class="gender-row">
+      <div class="gender-opt sel-m" id="opt-male" onclick="setGender('male')">♂ ชาย</div>
+      <div class="gender-opt" id="opt-female" onclick="setGender('female')">♀ หญิง</div>
+    </div>
+
+    <div class="input-row">
+      <div class="field">
+        <label>อายุ <span class="req">*</span></label>
+        <div class="input-wrap">
+          <input type="number" id="age" inputmode="numeric" min="5" max="80" placeholder="ปี" oninput="updateFormulaHint()">
+          <span class="input-unit">ปี</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>ส่วนสูง <span class="req">*</span></label>
+        <div class="input-wrap">
+          <input type="number" id="height" inputmode="numeric" min="100" max="220" placeholder="ซม." oninput="updateFormulaHint()">
+          <span class="input-unit">ซม.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- formula hint -->
+    <div class="formula-hint" id="formula-hint">
+      กรอกอายุและส่วนสูงเพื่อดูสูตรที่จะใช้
+    </div>
+
+    <div class="input-row single" style="margin-bottom:0;">
+      <div class="field">
+        <label>ค่า PEF ที่วัดได้ <span style="font-size:11px;color:#90a4ae">(ถ้ามี — เพื่อแสดง %Predicted และโซนสี)</span></label>
+        <div class="input-wrap">
+          <input type="number" id="measured" inputmode="numeric" min="50" max="900" placeholder="อ่านค่าจาก Peak Flow Meter">
+          <span class="input-unit">L/min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-calc" onclick="calculate()">คำนวณ</button>
+      <button class="btn-clear" onclick="clearForm()">🗑 ล้าง</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="result-box">
+    <div class="result-title">RESULT</div>
+
+    <!-- Predicted PEF -->
+    <div class="result-row">
+      <div class="result-row-label">
+        Estimated Peak Flow
+        <span class="sublabel" id="formula-used-label">—</span>
+      </div>
+      <div style="text-align:right;">
+        <div class="result-row-val" id="res-predicted">—</div>
+        <div class="result-row-unit">L/min</div>
+      </div>
+    </div>
+
+    <!-- % predicted (if measured) -->
+    <div id="pct-section" style="display:none;">
+      <div class="result-row">
+        <div class="result-row-label">
+          Peak flow variability (%Predicted)
+          <span class="sublabel">= ค่าวัดได้ ÷ Predicted × 100</span>
+        </div>
+        <div style="text-align:right;">
+          <div class="pct-big" id="res-pct">—</div>
+          <div class="result-row-unit">%</div>
+        </div>
+      </div>
+
+      <div class="pct-meter">
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--sub);margin-bottom:5px;">
+          <span id="res-measured-label">—</span>
+          <span id="res-pct-label2" style="font-weight:700;">—</span>
+        </div>
+        <div class="pct-meter-bar-wrap">
+          <div class="pct-meter-bar" id="pct-bar" style="width:0%"></div>
+          <div class="pct-marker-50"></div>
+          <div class="pct-marker-80"></div>
+        </div>
+        <div class="pct-axis">
+          <span>0%</span><span>50%</span><span>80%</span><span>100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone reference chips (if no measured) -->
+    <div id="zone-ref-section">
+      <div class="result-row" style="padding-bottom:8px;">
+        <div>
+          <div class="result-row-label" style="font-size:12px;margin-bottom:6px;">เกณฑ์ Peak Flow Zones (L/min)</div>
+          <div class="zone-ref-chips" id="zone-chips"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone card -->
+    <div id="zone-card"></div>
+
+    <!-- Save row -->
+    <div class="save-row">
+      <button class="btn-save" onclick="saveRecord()">💾 บันทึก</button>
+      <button class="btn-next" onclick="nextPatient()">▶ คนต่อไป</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== LIST ===== -->
+<div class="panel" id="panel-list">
+  <div class="list-toolbar">
+    <div class="list-count" id="list-count-text">ยังไม่มีข้อมูล</div>
+    <button class="btn-export" onclick="exportCSV()">📥 CSV</button>
+    <button class="btn-clear-all" onclick="clearAll()">🗑 ล้างทั้งหมด</button>
+  </div>
+  <div id="list-wrap">
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>ยังไม่มีข้อมูลผู้ป่วย<br>กดบันทึกหลังคำนวณแต่ละคน</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ABOUT ===== -->
+<div class="panel" id="panel-about">
+
+  <div class="about-card">
+    <h3>📐 สูตรที่ใช้ — ตรงกับ MDCalc Evidence Tab</h3>
+    <p>MDCalc ใช้ Hankinson 1999 (NHANES III) เป็นหลัก และ Knudson 1983 กรณี race = Other / อายุนอกช่วง</p>
+    <div class="formula-block">
+<b>อายุ 5–7 ปี (ทุก race) และ 8–17 ปี (race = Other):</b>
+PEFR = [(Height_cm − 100) × 5] + 100
+
+<b>อายุ 18–80 ปี (race = Other / คนไทย):</b>
+ชาย:   PEFR = {[(Height_m × 5.48) + 1.58] − [Age × 0.041]} × 60
+หญิง:  PEFR = {[(Height_m × 3.72) + 2.24] − [Age × 0.03]}  × 60
+
+หน่วย: Height_cm = ซม., Height_m = เมตร
+ผลลัพธ์: L/min</div>
+    <p style="margin-top:10px;">%Predicted = (ค่าวัดได้ ÷ Predicted) × 100</p>
+  </div>
+
+  <div class="about-card">
+    <h3>📊 ตารางเกณฑ์ Peak Flow Zone (MDCalc / GINA 2025)</h3>
+    <table class="ref-table">
+      <tr>
+        <th>Peak Flow Variability</th>
+        <th>Zone</th>
+        <th>ความหมาย</th>
+      </tr>
+      <tr>
+        <td>≥ 80%</td>
+        <td style="color:#2e7d32;font-weight:700;">🟢 Green</td>
+        <td>ปอดทำงานดี ปกติ</td>
+      </tr>
+      <tr>
+        <td>50–79%</td>
+        <td style="color:#bf360c;font-weight:700;">🟡 Yellow</td>
+        <td>ระวัง ปรึกษาแพทย์</td>
+      </tr>
+      <tr>
+        <td>&lt; 50%</td>
+        <td style="color:#b71c1c;font-weight:700;">🔴 Red</td>
+        <td>อันตราย พบแพทย์ทันที</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="about-card">
+    <h3>🟢🟡🔴 คำแนะนำตามโซนสี</h3>
+    <div class="zone-about-row">
+      <div class="zdot green"></div>
+      <div class="zinfo green">
+        <strong>โซนเขียว — ≥ 80% Predicted</strong>
+        <span>ปอดทำงานได้ดี · ใช้ยาตามแผนการรักษาปกติ · ติดตามตามนัด</span>
+      </div>
+    </div>
+    <div class="zone-about-row">
+      <div class="zdot yellow"></div>
+      <div class="zinfo yellow">
+        <strong>โซนเหลือง — 50–79% Predicted</strong>
+        <span>ปอดทำงานลดลง · เพิ่มยาตามแผน · ติดต่อพยาบาล/แพทย์ใน 24–48 ชม.</span>
+      </div>
+    </div>
+    <div class="zone-about-row">
+      <div class="zdot red"></div>
+      <div class="zinfo red">
+        <strong>โซนแดง — &lt; 50% Predicted</strong>
+        <span>อุดกั้นรุนแรง · ใช้ยาฉุกเฉิน · พบแพทย์ทันที / ห้องฉุกเฉิน</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-card">
+    <h3>ℹ️ เกี่ยวกับโปรแกรม</h3>
+    <p>พัฒนาสำหรับคลินิกโรคหืด/COPD โรงพยาบาลแปลงยาว จ.ฉะเชิงเทรา</p>
+    <p>รองรับทั้ง iPhone และคอมพิวเตอร์ ใช้ได้โดยไม่ต้องอินเทอร์เน็ตหลังดาวน์โหลดไฟล์</p>
+    <p style="color:#e53935;font-weight:600;">⚠️ ไม่ใช่เครื่องมือวินิจฉัยทดแทนการประเมินโดยแพทย์</p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let gender = 'male';
+let records = [];
+let currentResult = null;
+
+function setGender(g) {
+  gender = g;
+  document.getElementById('opt-male').className = 'gender-opt' + (g==='male' ? ' sel-m' : '');
+  document.getElementById('opt-female').className = 'gender-opt' + (g==='female' ? ' sel-f' : '');
+  updateFormulaHint();
+}
+
+// ===== FORMULA ENGINE =====
+function computePEF(age, height_cm, sex) {
+  const H_m = height_cm / 100;
+  let predicted, formula;
+
+  if (age >= 5 && age <= 7) {
+    // Ages 5-7, all ethnicities
+    predicted = (height_cm - 100) * 5 + 100;
+    formula = 'Ages 5–7 ปี: [(H−100)×5]+100';
+  } else if (age >= 8 && age <= 17) {
+    // Ages 8-17, Other ethnicity
+    predicted = (height_cm - 100) * 5 + 100;
+    formula = 'Ages 8–17 ปี (Other): [(H−100)×5]+100';
+  } else if (age >= 18 && age <= 80) {
+    // Ages 18-80, Other ethnicity — Knudson 1983
+    if (sex === 'male') {
+      predicted = ((H_m * 5.48 + 1.58) - (age * 0.041)) * 60;
+      formula = 'Ages 18–80 ปี ชาย: {[(H_m×5.48)+1.58]−[Age×0.041]}×60';
+    } else {
+      predicted = ((H_m * 3.72 + 2.24) - (age * 0.03)) * 60;
+      formula = 'Ages 18–80 ปี หญิง: {[(H_m×3.72)+2.24]−[Age×0.03]}×60';
+    }
+  } else {
+    return null;
+  }
+
+  return { predicted: Math.round(predicted), formula };
+}
+
+// ===== FORMULA HINT =====
+function updateFormulaHint() {
+  const age = parseFloat(document.getElementById('age').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const hint = document.getElementById('formula-hint');
+  if (!age || !height) {
+    hint.innerHTML = 'กรอกอายุและส่วนสูงเพื่อดูสูตรที่จะใช้';
+    return;
+  }
+  const r = computePEF(age, height, gender);
+  if (!r) {
+    hint.innerHTML = '<strong style="color:#e53935">อายุต้องอยู่ระหว่าง 5–80 ปี</strong>';
+    return;
+  }
+  hint.innerHTML = `<strong>สูตรที่ใช้:</strong> ${r.formula}<br><strong>ค่าโดยประมาณ:</strong> ~${r.predicted} L/min`;
+}
+
+// ===== CALCULATE =====
+function calculate() {
+  const age = parseFloat(document.getElementById('age').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const measured = parseFloat(document.getElementById('measured').value);
+  const hn = document.getElementById('hn').value.trim();
+
+  if (!age || !height) { showToast('⚠️ กรุณากรอกอายุและส่วนสูง'); return; }
+
+  const r = computePEF(age, height, gender);
+  if (!r) { showToast('⚠️ อายุต้องอยู่ระหว่าง 5–80 ปี'); return; }
+
+  const { predicted, formula } = r;
+  const g80 = Math.round(predicted * 0.80);
+  const g50 = Math.round(predicted * 0.50);
+
+  let pct = null, colorClass = 'none';
+  if (!isNaN(measured) && measured > 0) {
+    pct = Math.round((measured / predicted) * 100);
+    colorClass = pct >= 80 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+  }
+
+  currentResult = { hn, gender, age, height, predicted, measured: isNaN(measured)?null:measured, pct, colorClass, g80, g50, formula, time: new Date() };
+
+  // Show result box
+  document.getElementById('result-box').style.display = 'block';
+  document.getElementById('res-predicted').textContent = predicted;
+  document.getElementById('formula-used-label').textContent = formula;
+
+  const pctSec = document.getElementById('pct-section');
+  const zoneRefSec = document.getElementById('zone-ref-section');
+
+  if (pct !== null) {
+    // Has measured value
+    pctSec.style.display = 'block';
+    zoneRefSec.style.display = 'none';
+
+    const pctEl = document.getElementById('res-pct');
+    pctEl.textContent = pct + '%';
+    pctEl.className = 'pct-big ' + colorClass;
+
+    document.getElementById('res-measured-label').textContent = 'ค่าวัดได้: ' + measured + ' L/min';
+    document.getElementById('res-pct-label2').textContent = pct + '% — ' + (colorClass==='green'?'Green Zone':colorClass==='yellow'?'Yellow Zone':'Red Zone');
+    document.getElementById('res-pct-label2').style.color = colorClass==='green'?'var(--green)':colorClass==='yellow'?'var(--yellow)':'var(--red)';
+
+    const bar = document.getElementById('pct-bar');
+    bar.style.width = Math.min(pct, 120) / 1.2 + '%';
+    bar.className = 'pct-meter-bar ' + colorClass;
+
+    // Zone card
+    let icon, name, action;
+    if (colorClass==='green') {
+      icon='🟢'; name='Peak flow variability — Green Zone';
+      action='ปอดทำงานดี · ใช้ยาตามแผนการรักษาปกติ · ติดตามตามนัด';
+    } else if (colorClass==='yellow') {
+      icon='🟡'; name='Peak flow variability — Yellow Zone';
+      action='ปอดทำงานลดลง · เพิ่มยาตามแผน · ติดต่อพยาบาล/แพทย์';
+    } else {
+      icon='🔴'; name='Peak flow variability — Red Zone';
+      action='ปอดอุดกั้นรุนแรง · ใช้ยาฉุกเฉิน · พบแพทย์ทันที / ER';
+    }
+    document.getElementById('zone-card').innerHTML = `
+      <div class="zone-big ${colorClass}">
+        <div class="zone-big-icon">${icon}</div>
+        <div>
+          <div class="zone-big-name">${name}</div>
+          <div class="zone-big-action">${action}</div>
+        </div>
+      </div>`;
+  } else {
+    // No measured value — show zone chips
+    pctSec.style.display = 'none';
+    zoneRefSec.style.display = 'block';
+    document.getElementById('zone-chips').innerHTML = `
+      <span class="zone-chip green">🟢 ≥${g80}</span>
+      <span class="zone-chip yellow">🟡 ${g50}–${g80-1}</span>
+      <span class="zone-chip red">🔴 &lt;${g50}</span>`;
+    document.getElementById('zone-card').innerHTML = '';
+  }
+
+  document.getElementById('result-box').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ===== CLEAR =====
+function clearForm() {
+  document.getElementById('hn').value = '';
+  document.getElementById('age').value = '';
+  document.getElementById('height').value = '';
+  document.getElementById('measured').value = '';
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('formula-hint').textContent = 'กรอกอายุและส่วนสูงเพื่อดูสูตรที่จะใช้';
+  setGender('male');
+  currentResult = null;
+  document.getElementById('age').focus();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ===== NEXT PATIENT =====
+function nextPatient() {
+  if (currentResult) saveRecord(true);
+  clearForm();
+}
+
+// ===== SAVE =====
+function saveRecord(silent=false) {
+  if (!currentResult) { showToast('⚠️ ยังไม่มีผลคำนวณ'); return; }
+  records.push({ ...currentResult, id: Date.now() });
+  updateBadge();
+  if (!silent) showToast('✅ บันทึกแล้ว (' + records.length + ' คน)');
+}
+
+// ===== RENDER LIST =====
+function renderList() {
+  const wrap = document.getElementById('list-wrap');
+  const countText = document.getElementById('list-count-text');
+  if (records.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>ยังไม่มีข้อมูลผู้ป่วย<br>กดบันทึกหลังคำนวณแต่ละคน</p></div>`;
+    countText.textContent = 'ยังไม่มีข้อมูล';
+    return;
+  }
+  countText.textContent = 'บันทึกแล้ว ' + records.length + ' คน';
+  let html = '';
+  records.forEach((rec, i) => {
+    const gTh = rec.gender==='male'?'ชาย':'หญิง';
+    const name = rec.hn || ('ผู้ป่วย #'+(i+1));
+    const time = rec.time.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    const itemClass = rec.pct!==null ? rec.colorClass : 'no-measured';
+    const pctHtml = rec.pct!==null
+      ? `<span class="pt-pct ${rec.colorClass}">${rec.pct}% · ${rec.measured} L/min</span>`
+      : `<span class="pt-pct none">ไม่มีค่าวัด</span>`;
+    html += `
+      <div class="patient-item ${itemClass}">
+        <div class="pt-num">${i+1}</div>
+        <div class="pt-info">
+          <div class="pt-name">${name}</div>
+          <div class="pt-detail">${gTh} ${rec.age}ปี ${rec.height}ซม. · ${time}</div>
+          ${pctHtml}
+        </div>
+        <div class="pt-values">
+          <div class="pt-predicted">${rec.predicted}</div>
+          <div style="font-size:10px;color:var(--sub)">L/min</div>
+        </div>
+        <div class="pt-delete" onclick="deleteRecord(${rec.id})">✕</div>
+      </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function deleteRecord(id) {
+  records = records.filter(r => r.id !== id);
+  renderList(); updateBadge();
+}
+
+function clearAll() {
+  if (!records.length) { showToast('ไม่มีข้อมูล'); return; }
+  if (confirm('ล้างข้อมูลทั้งหมด ' + records.length + ' คน?')) {
+    records = []; renderList(); updateBadge();
+    showToast('🗑 ล้างทั้งหมดแล้ว');
+  }
+}
+
+function updateBadge() {
+  document.getElementById('list-count-badge').textContent = records.length;
+}
+
+// ===== EXPORT CSV =====
+function exportCSV() {
+  if (!records.length) { showToast('ไม่มีข้อมูล'); return; }
+  const header = 'ลำดับ,HN/ชื่อ,เพศ,อายุ,ส่วนสูง(ซม.),Predicted PEF,Measured PEF,%Predicted,Zone,สูตรที่ใช้,เวลา';
+  const rows = records.map((r,i) => {
+    const g = r.gender==='male'?'ชาย':'หญิง';
+    const zone = r.pct!==null?(r.colorClass==='green'?'Green':r.colorClass==='yellow'?'Yellow':'Red'):'-';
+    const t = r.time.toLocaleString('th-TH');
+    return [i+1, r.hn||'-', g, r.age, r.height, r.predicted, r.measured||'-', r.pct||'-', zone, '"'+r.formula+'"', t].join(',');
+  });
+  const csv = '\uFEFF'+header+'\n'+rows.join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href=url; a.download='PeakFlow_'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'.csv';
+  a.click();
+  showToast('📥 ส่งออก CSV แล้ว');
+}
+
+// ===== TABS =====
+function showTab(name) {
+  ['calc','list','about'].forEach(t => {
+    document.getElementById('panel-'+t).className = 'panel'+(t===name?' active':'');
+    document.getElementById('tab-'+t).className = 'tab'+(t===name?' active':'');
+  });
+  if (name==='list') renderList();
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Enter') calculate(); });
+</script>
+</body>
+</html>
